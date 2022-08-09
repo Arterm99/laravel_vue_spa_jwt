@@ -51,7 +51,8 @@ __webpack_require__.r(__webpack_exports__);
       var _this = this;
 
       // Достаем токен из файла api.js и открываем страницу, иначе перекидываем обратно на страницу Логина
-      _api__WEBPACK_IMPORTED_MODULE_0__["default"].get("/api/auth/fruits", {}).then(function (res) {
+      _api__WEBPACK_IMPORTED_MODULE_0__["default"].get("/api/auth/fruits", {}) // .then( - это результат, который мы далее отправляем
+      .then(function (res) {
         _this.fruits = res.data.data;
       });
     }
@@ -96,7 +97,22 @@ api.interceptors.response.use(function (config) {
 
   return config;
 }, function (error) {
-  // Редирект, если не авторизован
+  // Если после истечения срока жизни токена мы переходим на страницу с фрутами, то мы обновляем токен
+  if (error.response.data.message === 'Token has expired') {
+    return axios__WEBPACK_IMPORTED_MODULE_0___default().post('api/auth/refresh', {}, {
+      headers: {
+        'authorization': "Bearer ".concat(localStorage.getItem('access_token'))
+      } // Добавляем фрукты без перезагрузки
+      // .then( - это результат, который мы далее отправляем
+
+    }).then(function (res) {
+      localStorage.setItem('access_token', res.data.access_token);
+      error.config.headers.authorization = "Bearer ".concat(res.data.access_token);
+      return api.request(error.config);
+    });
+  } // Редирект, если не авторизован
+
+
   if (error.response.status === 500 || error.response.status === 401) {
     _router__WEBPACK_IMPORTED_MODULE_1__["default"].push({
       name: 'user.login'
