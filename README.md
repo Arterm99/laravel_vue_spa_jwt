@@ -1,12 +1,14 @@
 <p align="center">
-    <h1 align="center">"CRUD Laravel + Vue | SPA"</h1>
+    <h1 align="center">"VUE + JWT | SPA"</h1>
     </p>
 
-<p>SPA на VUE</p>
+<p>Регистрация и авторизация на VUE + JWT | SPA</p>
 
 <h4>Реализованная функциональность</h4>
 <ul>
-    <li>CRUD</li>
+    <li>Registration</li>
+    <li>Login</li>
+    <li>Таблица данных с доступом по JWT</li>
 </ul> 
 
 <h4>Основной стек технологий:</h4>
