@@ -31,6 +31,8 @@ __webpack_require__.r(__webpack_exports__);
   },
   methods: {
     login: function login() {
+      var _this = this;
+
       // Через axios передаем данные на бэк
       axios.post('/api/auth/login', {
         email: this.email,
@@ -38,7 +40,11 @@ __webpack_require__.r(__webpack_exports__);
       }).then(function (res) {
         console.log(res.data.access_token); // Помещаем токен в LocalStorage
 
-        localStorage.setItem('access_token', res.data.access_token);
+        localStorage.setItem('access_token', res.data.access_token); // После получения токена выполни редирект на 'user.personal'
+
+        _this.$router.push({
+          name: 'user.personal'
+        });
       });
     }
   }

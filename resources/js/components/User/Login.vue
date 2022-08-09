@@ -27,6 +27,9 @@ export default {
 
                 // Помещаем токен в LocalStorage
                 localStorage.setItem('access_token', res.data.access_token);
+
+                // После получения токена выполни редирект на 'user.personal'
+                this.$router.push({ name: 'user.personal'})
             })
         }
     }

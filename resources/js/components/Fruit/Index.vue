@@ -9,7 +9,7 @@
             </tr>
             </thead>
             <tbody>
-<!--       v-for - это  foreach во Вью     -->
+            <!--       v-for - это  foreach во Вью     -->
             <tr v-for="fruit in fruits">
                 <th scope="row">{{ fruit.id }}</th>
                 <td>{{ fruit.name }}</td>
@@ -21,26 +21,30 @@
 </template>
 
 <script>
+import api from "../../api";
 export default {
     name: "Index",
 
-    data(){
+    data() {
         return {
-            fruits: null
+            fruits: null,
         }
     },
 
+    // mounted - Запуск метода
     mounted() {
         this.getFruits()
     },
 
     methods: {
         getFruits() {
-            axios.get(`/api/fruits`)
-            .then ( res => {
-                this.fruits = res.data.data
-            })
-        }
+
+            // Достаем токен из файла api.js и открываем страницу, иначе перекидываем обратно на страницу Логина
+            api.get(`/api/auth/fruits`, {})
+                .then(res => {
+                    this.fruits = res.data.data
+                })
+        },
 
     }
 }
