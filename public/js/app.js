@@ -5368,6 +5368,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
+/* harmony import */ var _api__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../api */ "./resources/js/api.js");
 //
 //
 //
@@ -5378,10 +5379,98 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+// Прокидываем созданный в api.js токен
+
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
   name: "Index",
-  components: {}
+  data: function data() {
+    return {
+      accessToken: null
+    };
+  },
+  mounted: function mounted() {
+    this.getAccessToken();
+  },
+  // Обновляем страницу после входа, что бы высветились ссылки, которые закрыли v-if
+  updated: function updated() {
+    this.getAccessToken();
+  },
+  methods: {
+    getAccessToken: function getAccessToken() {
+      this.accessToken = localStorage.getItem('access_token');
+    },
+    logout: function logout() {
+      var _this = this;
+
+      _api__WEBPACK_IMPORTED_MODULE_0__["default"].post('/api/auth/logout').then(function (res) {
+        localStorage.removeItem('access_token');
+
+        _this.$router.push({
+          name: 'user.login'
+        });
+      });
+    }
+  }
 });
+
+/***/ }),
+
+/***/ "./resources/js/api.js":
+/*!*****************************!*\
+  !*** ./resources/js/api.js ***!
+  \*****************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
+/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _router__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./router */ "./resources/js/router.js");
+// Добавляем свой axios
+
+
+var api = axios__WEBPACK_IMPORTED_MODULE_0___default().create(); // Стартовый запрос
+
+api.interceptors.request.use(function (config) {
+  // Добавляем токен, смотри кавычки (Bearer - тип)
+  if (localStorage.getItem('access_token')) {
+    config.headers.authorization = "Bearer ".concat(localStorage.getItem('access_token'));
+  }
+
+  return config;
+}, function (error) {}); // Конечный запрос
+// Начальный ответ
+
+api.interceptors.response.use({}, function (error) {
+  // Если после истечения срока жизни токена мы переходим на страницу с фрутами, то мы обновляем токен
+  if (error.response.data.message === 'Token has expired') {
+    return axios__WEBPACK_IMPORTED_MODULE_0___default().post('api/auth/refresh', {}, {
+      headers: {
+        'authorization': "Bearer ".concat(localStorage.getItem('access_token'))
+      } // Добавляем фрукты без перезагрузки
+      // .then( - это результат, который мы далее отправляем
+
+    }).then(function (res) {
+      localStorage.setItem('access_token', res.data.access_token);
+      error.config.headers.authorization = "Bearer ".concat(res.data.access_token);
+      return api.request(error.config);
+    });
+  } // Редирект, если не авторизован
+
+
+  if (error.response.status === 500 || error.response.status === 401) {
+    _router__WEBPACK_IMPORTED_MODULE_1__["default"].push({
+      name: 'user.login'
+    });
+  }
+}); // Конечный ответ
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (api);
 
 /***/ }),
 
@@ -5475,7 +5564,7 @@ __webpack_require__.r(__webpack_exports__);
 
 vue__WEBPACK_IMPORTED_MODULE_0__["default"].use(vue_router__WEBPACK_IMPORTED_MODULE_1__["default"]); // Подключаем VueRouter во Vue
 
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (new vue_router__WEBPACK_IMPORTED_MODULE_1__["default"]({
+var route = new vue_router__WEBPACK_IMPORTED_MODULE_1__["default"]({
   // export - передает значения, при import и router(после components в app.js)
   mode: 'history',
   // Подключечаем файлы
@@ -5487,7 +5576,7 @@ vue__WEBPACK_IMPORTED_MODULE_0__["default"].use(vue_router__WEBPACK_IMPORTED_MOD
     component: function component() {
       return __webpack_require__.e(/*! import() */ "resources_js_components_Fruit_Index_vue").then(__webpack_require__.bind(__webpack_require__, /*! ./components/Fruit/Index */ "./resources/js/components/Fruit/Index.vue"));
     },
-    name: 'fruit.index' // нэйминг для редиректов, ссылок : название папки/название файла
+    name: 'fruit.index' // нэйминг для редиректов, ссылок : название папки/название файла. Просто обозначение
 
   }, {
     path: '/users/login',
@@ -5507,8 +5596,41 @@ vue__WEBPACK_IMPORTED_MODULE_0__["default"].use(vue_router__WEBPACK_IMPORTED_MOD
       return __webpack_require__.e(/*! import() */ "resources_js_components_User_Personal_vue").then(__webpack_require__.bind(__webpack_require__, /*! ./components/User/Personal */ "./resources/js/components/User/Personal.vue"));
     },
     name: 'user.personal'
+  }, // Переход на любые страницы кроме указанных выше, ведет на страницу Personal
+  {
+    path: '*',
+    component: function component() {
+      return __webpack_require__.e(/*! import() */ "resources_js_components_User_Personal_vue").then(__webpack_require__.bind(__webpack_require__, /*! ./components/User/Personal */ "./resources/js/components/User/Personal.vue"));
+    },
+    name: '404'
   }]
-}));
+}); // Метод beforeEach -  перед тем как будет подгружен какой либо компонент, мы выполним настройки
+// Метод beforeEach примерно = middleware для роутов
+// to, from, next - позволяет записывать в консоль страницы по которым ходили
+
+route.beforeEach(function (to, from, next) {
+  var accessToken = localStorage.getItem('access_token'); // Если все страницы, кроме user.login и 'user.registration' не имеют access_token (токена), то возвращаем на user.login
+
+  if (!accessToken) {
+    if (to.name === 'user.login' || to.name === 'user.registration') {
+      return next();
+    } else {
+      return next({
+        name: 'user.login'
+      });
+    }
+  } // Если есть токен, то с user.login редирект user.personal
+
+
+  if (to.name === 'user.login' || to.name === 'user.registration' && accessToken) {
+    return next({
+      name: 'user.personal'
+    });
+  }
+
+  next();
+});
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (route);
 
 /***/ }),
 
@@ -28053,17 +28175,39 @@ var render = function () {
         _vm._v("Fruit"),
       ]),
       _vm._v(" "),
-      _c("router-link", { attrs: { to: { name: "user.login" } } }, [
-        _vm._v("Login"),
-      ]),
+      !_vm.accessToken
+        ? _c("router-link", { attrs: { to: { name: "user.login" } } }, [
+            _vm._v("Login"),
+          ])
+        : _vm._e(),
       _vm._v(" "),
-      _c("router-link", { attrs: { to: { name: "user.registration" } } }, [
-        _vm._v("Registration"),
-      ]),
+      !_vm.accessToken
+        ? _c("router-link", { attrs: { to: { name: "user.registration" } } }, [
+            _vm._v("Registration"),
+          ])
+        : _vm._e(),
       _vm._v(" "),
-      _c("router-link", { attrs: { to: { name: "user.personal" } } }, [
-        _vm._v("Personal"),
-      ]),
+      _vm.accessToken
+        ? _c("router-link", { attrs: { to: { name: "user.personal" } } }, [
+            _vm._v("Personal"),
+          ])
+        : _vm._e(),
+      _vm._v(" "),
+      _vm.accessToken
+        ? _c(
+            "a",
+            {
+              attrs: { href: "#" },
+              on: {
+                click: function ($event) {
+                  $event.preventDefault()
+                  return _vm.logout.apply(null, arguments)
+                },
+              },
+            },
+            [_vm._v("Logout")]
+          )
+        : _vm._e(),
       _vm._v(" "),
       _c("router-view"),
     ],

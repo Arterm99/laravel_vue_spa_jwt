@@ -14,9 +14,17 @@ class StoreController extends Controller
     {
         $data = $request->validated();
         $data['password'] = Hash::make($data['password']);
-        User::firstOrCreate([
-            'email' => $data['email']
-        ], $data);
-        return response([]);
+        $user = User::where('email', $data['email'])->first();
+
+        // Проверка на дублирование email
+        if ($user) {
+            return response(['error' => 'User with this email already exists'], 403);
+        }
+
+        $user = User::create($data);
+
+        // При регистрации добавляем пользователю Токен
+        $token = auth()->tokenById($user->id);
+        return response(['access_token' => $token]);
     }
 }

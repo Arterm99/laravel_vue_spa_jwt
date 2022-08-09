@@ -5,6 +5,7 @@
         <input v-model="password" type="password" class="form-control mb-3" placeholder="password">
 <!--    prevent - выключает сценарий по умолчанию, который есть у html тегов    -->
         <input @click.prevent="login" type="submit" class="btn btn-primary">
+        <div v-if="error" class="text-danger"> {{ error }} </div>
     </div>
 </template>
 
@@ -15,7 +16,8 @@ export default {
     data() {
         return {
             email: null,
-            password: null
+            password: null,
+            error: null
         }
     },
     methods: {
@@ -30,6 +32,11 @@ export default {
 
                 // После получения токена выполни редирект на 'user.personal'
                 this.$router.push({ name: 'user.personal'})
+            })
+
+                // Ошибку передаем с AuthController
+            .catch(error => {
+                this.error = error.response.data.error
             })
         }
     }

@@ -21,12 +21,14 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
   name: "login",
   data: function data() {
     return {
       email: null,
-      password: null
+      password: null,
+      error: null
     };
   },
   methods: {
@@ -45,6 +47,9 @@ __webpack_require__.r(__webpack_exports__);
         _this.$router.push({
           name: 'user.personal'
         });
+      }) // Ошибку передаем с AuthController
+      ["catch"](function (error) {
+        _this.error = error.response.data.error;
       });
     }
   }
@@ -191,6 +196,12 @@ var render = function () {
         },
       },
     }),
+    _vm._v(" "),
+    _vm.error
+      ? _c("div", { staticClass: "text-danger" }, [
+          _vm._v(" " + _vm._s(_vm.error) + " "),
+        ])
+      : _vm._e(),
   ])
 }
 var staticRenderFns = []

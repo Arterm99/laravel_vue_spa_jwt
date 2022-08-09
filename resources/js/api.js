@@ -18,14 +18,7 @@ api.interceptors.request.use(config => {
 
 // Конечный запрос
 // Начальный ответ
-api.interceptors.response.use(config => {
-
-    // Добавляем токен, смотри кавычки (Bearer - тип)
-    if (localStorage.getItem('access_token')) {
-        config.headers.authorization = `Bearer ${localStorage.getItem('access_token')}`
-    }
-    return config
-}, error => {
+api.interceptors.response.use({}, error => {
 
     // Если после истечения срока жизни токена мы переходим на страницу с фрутами, то мы обновляем токен
     if (error.response.data.message === 'Token has expired') {

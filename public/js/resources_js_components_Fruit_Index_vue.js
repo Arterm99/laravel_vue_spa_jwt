@@ -61,69 +61,6 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
-/***/ "./resources/js/api.js":
-/*!*****************************!*\
-  !*** ./resources/js/api.js ***!
-  \*****************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
-/* harmony export */ });
-/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
-/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _router__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./router */ "./resources/js/router.js");
-// Добавляем свой axios
-
-
-var api = axios__WEBPACK_IMPORTED_MODULE_0___default().create(); // Стартовый запрос
-
-api.interceptors.request.use(function (config) {
-  // Добавляем токен, смотри кавычки (Bearer - тип)
-  if (localStorage.getItem('access_token')) {
-    config.headers.authorization = "Bearer ".concat(localStorage.getItem('access_token'));
-  }
-
-  return config;
-}, function (error) {}); // Конечный запрос
-// Начальный ответ
-
-api.interceptors.response.use(function (config) {
-  // Добавляем токен, смотри кавычки (Bearer - тип)
-  if (localStorage.getItem('access_token')) {
-    config.headers.authorization = "Bearer ".concat(localStorage.getItem('access_token'));
-  }
-
-  return config;
-}, function (error) {
-  // Если после истечения срока жизни токена мы переходим на страницу с фрутами, то мы обновляем токен
-  if (error.response.data.message === 'Token has expired') {
-    return axios__WEBPACK_IMPORTED_MODULE_0___default().post('api/auth/refresh', {}, {
-      headers: {
-        'authorization': "Bearer ".concat(localStorage.getItem('access_token'))
-      } // Добавляем фрукты без перезагрузки
-      // .then( - это результат, который мы далее отправляем
-
-    }).then(function (res) {
-      localStorage.setItem('access_token', res.data.access_token);
-      error.config.headers.authorization = "Bearer ".concat(res.data.access_token);
-      return api.request(error.config);
-    });
-  } // Редирект, если не авторизован
-
-
-  if (error.response.status === 500 || error.response.status === 401) {
-    _router__WEBPACK_IMPORTED_MODULE_1__["default"].push({
-      name: 'user.login'
-    });
-  }
-}); // Конечный ответ
-
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (api);
-
-/***/ }),
-
 /***/ "./resources/js/components/Fruit/Index.vue":
 /*!*************************************************!*\
   !*** ./resources/js/components/Fruit/Index.vue ***!
