@@ -12,7 +12,7 @@
 <h4>Основной стек технологий:</h4>
 <ul>
 	<li>PHP 8, SQLite</li>
-    <li>VueJs JWT</li>
+    <li>VueJs</li>
     <li>HTML, CSS</li>
 	<li>Laravel</li>
 	<li>Git</li>
